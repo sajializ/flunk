@@ -2,6 +2,7 @@
 
 import socket
 import json
+import finder
 
 
 class Fluncaster:
@@ -12,6 +13,7 @@ class Fluncaster:
 
 
     def __init__(self):
+        self.finder = finder.Finder()
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         s.connect((Fluncaster.BROADCAST_ADDRESS, Fluncaster.PORT))
