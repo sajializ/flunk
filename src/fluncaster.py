@@ -2,6 +2,7 @@
 
 import socket
 import json
+from netifaces import interfaces, ifaddresses, AF_INET
 
 
 class Fluncaster:
@@ -12,7 +13,11 @@ class Fluncaster:
 
 
     def __init__(self):
-        self.local_ip = socket.gethostname()
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        s.connect((Fluncaster.BROADCAST_ADDRESS, Fluncaster.PORT))
+        self.local_ip = s.getsockname()[0]
+        s.close()
 
     def generate_request(self, filename):
         return {
@@ -37,6 +42,8 @@ class Fluncaster:
 
         while True:
             data, address = s.recvfrom(Fluncaster.CHUCK_SIZE)
+            
+            # print(s.getsockname(), address[0])
             if address[0] == self.local_ip:
                 continue
 
