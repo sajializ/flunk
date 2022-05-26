@@ -12,7 +12,7 @@ class Fluncaster:
 
 
     def __init__(self):
-        pass
+        self.local_ip = socket.gethostname()
 
     def generate_request(self, filename):
         return {
@@ -37,4 +37,8 @@ class Fluncaster:
 
         while True:
             data, address = s.recvfrom(Fluncaster.CHUCK_SIZE)
-            print("\n\n 2. Server received: ", data.decode('utf-8'), "\n\n")
+            if address[0] == self.local_ip:
+                continue
+
+            request = json.loads(data.decode('utf-8'))['request']
+            print(f"Received: {request} \n")
