@@ -59,13 +59,15 @@ class Fluncaster:
                 continue
 
             request = json.loads(data.decode('utf-8'))
-            if request.values()[0] == 'request':
+            print(request)
+
+            if 'request' in request.keys():
                 result = self.finder.get_path(request['request'])
                 if len(result):
                     response = json.dumps(self.generate_message(['response'], [result]))
                     s.sendto(response.encode('utf-8'), address)
 
-            elif request.values(0) == 'download':
+            elif 'download' in request.keys():
                 self.send(address, request['download'])
 
     def send(self, address, path):
