@@ -37,10 +37,12 @@ class Fluncaster:
 
         s.settimeout(1)
         result, address = s.recvfrom(Fluncaster.CHUCK_SIZE)
-        path = result.decode()['name']
-        size = result.decode()['size']
+        result = json.loads((result.decode('utf-8')))['response'][0]
+        print(result)
+        path = result['name']
+        size = result['size']
 
-        response = json.dumps(self.generate_message(['download'], [path]))
+        response = json.dumps(self.generate_message(['download', 'port'], [path, 12346]))
         s.sendto(response.encode('utf-8'), address)
 
         self.receive(path)
@@ -68,16 +70,16 @@ class Fluncaster:
                     s.sendto(response.encode('utf-8'), address)
 
             elif 'download' in request.keys():
-                self.send(address, request['download'])
+                self.send(address[0], request['download'], request['port'])
 
-    def send(self, address, path):
+    def send(self, address, path, port):
         tcp_socket = socket.socket()
-        tcp_socket.connect(address)
+        tcp_socket.connect((address, port))
         tcp_socket.send("SALAAAM")
 
     def receive(self, path):
         tcp_socket = socket.socket()
-        tcp_socket.bind((self.local_ip, Fluncaster.PORT))
+        tcp_socket.bind(("127.0.0.1", 12346))
         tcp_socket.listen(5)
         c, addr = tcp_socket.accept()
         l = c.recv(1024)
