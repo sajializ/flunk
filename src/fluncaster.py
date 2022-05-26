@@ -45,7 +45,7 @@ class Fluncaster:
         response = json.dumps(self.generate_message(['download', 'port'], [path, 12346]))
         s.sendto(response.encode('utf-8'), address)
 
-        self.receive(path)
+        self.receive(path.split('/')[-1])
 
         s.close()
 
@@ -75,12 +75,17 @@ class Fluncaster:
     def send(self, address, path, port):
         tcp_socket = socket.socket()
         tcp_socket.connect((address, port))
-        tcp_socket.send("SALAAAM".encode('utf-8'))
+        with open(path, "rb") as binary_file:
+            while (chunk := binary_file.read(Fluncaster.CHUCK_SIZE)):
+                tcp_socket.send(chunk.encode('utf-8'))
+        tcp_socket.close()
 
-    def receive(self, path):
+    def receive(self, filename):
         tcp_socket = socket.socket()
         tcp_socket.bind((self.local_ip, 12346))
         tcp_socket.listen(5)
         c, addr = tcp_socket.accept()
-        l = c.recv(1024)
-        print(l)
+        with open(filename, "wb") as binary_file:
+            chunk = c.recv(Fluncaster.CHUCK_SIZE)
+            binary_file.write(chunk)
+        tcp_socket.close()
