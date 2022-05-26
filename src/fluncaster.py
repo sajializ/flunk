@@ -19,16 +19,12 @@ class Fluncaster:
         s.connect((Fluncaster.BROADCAST_ADDRESS, Fluncaster.PORT))
         self.local_ip = s.getsockname()[0]
         s.close()
-
-    def generate_request(self, filename):
-        return {
-                "request": filename
-            }
-
-    def generate_response(self, result):
-        return {
-                "response": str(result)
-            }
+    
+    def generate_message(self, properties, values):
+        message = {}
+        for property, value in zip(properties, values):
+            message[property] = value
+        return message
 
     def broadcast_request(self, filename):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
@@ -36,7 +32,7 @@ class Fluncaster:
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
         s.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
-        message = json.dumps(self.generate_request(filename))
+        message = json.dumps(self.generate_message(['request'], [filename]))
         s.sendto(message.encode('utf-8'), (Fluncaster.BROADCAST_ADDRESS, Fluncaster.PORT))
 
         s.settimeout(1)
@@ -53,12 +49,11 @@ class Fluncaster:
         while True:
             data, address = s.recvfrom(Fluncaster.CHUCK_SIZE)
             
-            # print(s.getsockname(), address[0])
             if address[0] == self.local_ip:
                 continue
 
             request = json.loads(data.decode('utf-8'))['request']
             result = self.finder.get_path(request)
             if len(result):
-                response = json.dumps(self.generate_response(result))
-                s.sendto(response, address)
+                response = json.dumps(self.generate_message(['response'], [result]))
+                s.sendto(response.encode('utf-8'), address)
