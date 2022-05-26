@@ -25,6 +25,11 @@ class Fluncaster:
                 "request": filename
             }
 
+    def generate_response(self, result):
+        return {
+                "response": str(result)
+            }
+
     def broadcast_request(self, filename):
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
 
@@ -36,6 +41,7 @@ class Fluncaster:
 
         s.settimeout(1)
         result = s.recvfrom(Fluncaster.CHUCK_SIZE)
+        print(result)
 
         s.close()
 
@@ -54,4 +60,5 @@ class Fluncaster:
             request = json.loads(data.decode('utf-8'))['request']
             result = self.finder.get_path(request)
             if len(result):
-                s.sendto(result, address)
+                response = json.dumps(self.generate_response(result))
+                s.sendto(response, address)
