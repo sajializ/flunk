@@ -2,7 +2,6 @@
 
 import socket
 import json
-from netifaces import interfaces, ifaddresses, AF_INET
 
 
 class Fluncaster:
