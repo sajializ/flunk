@@ -34,6 +34,9 @@ class Fluncaster:
         message = json.dumps(self.generate_request(filename))
         s.sendto(message.encode('utf-8'), (Fluncaster.BROADCAST_ADDRESS, Fluncaster.PORT))
 
+        s.settimeout(1)
+        result = s.recvfrom(Fluncaster.CHUCK_SIZE)
+
         s.close()
 
     def listen(self):
@@ -49,4 +52,6 @@ class Fluncaster:
                 continue
 
             request = json.loads(data.decode('utf-8'))['request']
-            print(f"Received: {request} \n")
+            result = self.finder.get_path(request)
+            if len(result):
+                s.sendto(result, address)
