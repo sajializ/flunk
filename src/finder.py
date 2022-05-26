@@ -10,6 +10,8 @@ class Finder:
         result = []
         for root, dirs, files in os.walk(self.PATH):
             if filename in files:
-                result.append(os.path.join(root, filename))
+                file_path = os.path.join(root, filename)
+                file_size = os.path.getsize(file_path)
+                result.append({"name": file_path, "size": file_size})
         return result
 
